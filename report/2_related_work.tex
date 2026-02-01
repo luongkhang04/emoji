@@ -1,0 +1,19 @@
+\section{RELATED WORK}
+
+\subsection{Emoji Prediction and Text Classification}
+Emoji prediction can be viewed as standard multi-class text classification, closely related to sentiment analysis and emotion recognition in social media text. Classical pipelines typically rely on sparse lexical features (e.g., TF--IDF over word/character $n$-grams) paired with linear classifiers. These methods are strong baselines for short-text tasks and remain competitive when data is limited \cite{manning2008ir}.
+
+\subsection{Neural Models for Text}
+Neural approaches learn task-specific representations and can better capture compositional patterns beyond surface $n$-grams:
+\begin{itemize}
+    \item \textbf{FastText-style models} use word embeddings with subword $n$-grams to handle misspellings and morphological variations efficiently \cite{joulin2017bag}.
+    \item \textbf{Convolutional architectures} (TextCNN) extract local $n$-gram features using 1D convolutions and max pooling, often performing strongly on sentence classification \cite{kim2014cnn}.
+    \item \textbf{Recurrent encoders} (LSTM/GRU) capture sequential context; attention mechanisms improve pooling by weighting informative tokens more heavily \cite{bahdanau2015neural}.
+\end{itemize}
+
+\subsection{Transformers}
+Transformers replace recurrence with self-attention and dominate many NLP benchmarks \cite{vaswani2017attention}. Large pretrained models such as BERT \cite{devlin2019bert} and its compressed variants such as DistilBERT \cite{sanh2019distilbert} can be fine-tuned for downstream classification tasks with relatively small changes to the model head.
+
+\subsection{Client-side Deployment}
+Running NLP models in the browser is increasingly feasible via ONNX export and WebAssembly backends. ONNX provides an interoperable model format \cite{onnx}, and Transformers.js enables local model loading and inference in JavaScript applications \cite{transformersjs}. This repo leverages both to deliver privacy-preserving emoji suggestions without server-side inference.
+

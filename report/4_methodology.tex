@@ -1,0 +1,60 @@
+\section{DATASET}
+
+\subsection{Source and Collection}
+The dataset is derived from tweet-style text collected using \texttt{snscrape}. Data collection was performed by issuing queries per emoji and retaining text samples that contain the queried emoji. English filtering is performed using \texttt{pycld3}, inspired by the WiLI language identification benchmark \cite{thoma2018wili}. Because scraped social media text is noisy, some non-English samples and duplicates may remain.
+
+\subsection{Cleaning and Normalization}
+The preprocessing notebook (\texttt{data-preprocess.ipynb}) applies a simple cleaning function that:
+\begin{itemize}
+    \item Normalizes Unicode using NFKC.
+    \item Removes URLs, mentions, hashtags, and emojis.
+    \item Lowercases and collapses repeated whitespace.
+\end{itemize}
+
+\subsection{Train/Test Split Statistics}
+The final dataset is stored as two CSV files (\texttt{data/train\_data.csv}, \texttt{data/test\_data.csv}). Table~\ref{tab:dataset-stats} summarizes the split.
+
+\begin{table}[H]
+    \centering
+    \caption{Dataset statistics.}
+    \label{tab:dataset-stats}
+    \begin{tabular}{lrrr}
+        \toprule
+        Split & Samples & \#Classes & Class count range \\
+        \midrule
+        Train & 751{,}885 & 43 & 16{,}718--17{,}846 \\
+        Test  & 83{,}543  & 43 & 1{,}858--1{,}983 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{MODELS}
+
+\subsection{Common Preliminaries}
+Tokenization for non-Transformer neural models uses a simple regex-based tokenizer that splits on word characters and punctuation. A vocabulary is constructed from the training set with a configurable maximum size and minimum frequency, then sequences are padded per batch.
+
+\subsection{TF--IDF Baselines}
+We use a feature union of:
+\begin{itemize}
+    \item word $n$-grams (e.g., $(1,2)$),
+    \item character $n$-grams (e.g., $(3,5)$),
+\end{itemize}
+converted to TF--IDF features and trained with one of:
+\begin{itemize}
+    \item Linear SVM (\texttt{LinearSVC}),
+    \item Logistic Regression (\texttt{LogisticRegression}),
+    \item Multinomial Naive Bayes (\texttt{MultinomialNB}).
+\end{itemize}
+
+\subsection{FastText-Style Subword Model}
+The FastText-style classifier \cite{joulin2017bag} represents each token by a word embedding and augments it with hashed subword $n$-grams to improve robustness to rare words and spelling variants. Subword features are generated for each token and mapped into a fixed number of hash buckets; embeddings are aggregated and fed to a linear classification head.
+
+\subsection{TextCNN}
+TextCNN applies multiple 1D convolution filters with different kernel widths over the embedding sequence, followed by max-over-time pooling and a dropout-regularized linear layer \cite{kim2014cnn}. This captures local $n$-gram patterns efficiently.
+
+\subsection{BiRNN with Attention}
+The BiLSTM/BiGRU model encodes the sequence bidirectionally, then applies an attention mechanism to compute a weighted sum of hidden states \cite{bahdanau2015neural}. Compared to average pooling, attention can emphasize informative tokens (e.g., sentiment-bearing words).
+
+\subsection{Transformer (DistilBERT Fine-tuning)}
+We fine-tune DistilBERT \cite{sanh2019distilbert} for sequence classification by adding a classification head and optimizing cross-entropy. Fine-tuning leverages pretrained language knowledge and yields the strongest performance in our experiments.
+

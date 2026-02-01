@@ -1,0 +1,138 @@
+\documentclass[a4paper, 13pt]{article}
+\usepackage{fancybox}
+\usepackage{a4wide,amssymb,epsfig,latexsym,array,hhline,fancyhdr}
+\usepackage{wrapfig}
+\usepackage{amsmath,amsxtra,amssymb,latexsym,amscd}
+\usepackage[utf8]{vietnam}
+% Use English labels in captions ("Figure"/"Table" instead of "Hình"/"Bảng")
+\AtBeginDocument{%
+    \renewcommand{\figurename}{Figure}%
+    \renewcommand{\tablename}{Table}%
+}
+\usepackage[left=2.50cm, right=2.50cm, top=2.50cm, bottom=2.5cm]{geometry}
+\usepackage{amsthm}
+\usepackage{multirow, multicol,longtable,amscd}
+\usepackage{diagbox}
+\usepackage{booktabs}
+\usepackage{alltt}
+\usepackage[framemethod=tikz]{mdframed}
+\usepackage{caption,subcaption}
+\usepackage{lastpage}
+\usepackage{enumerate}
+\usepackage{bussproofs}
+\usepackage{cancel}
+\usepackage{graphicx}	
+%%%
+\usepackage{forest}
+
+\usepackage{float}
+\usepackage{tabularx, caption}
+\usepackage{graphics}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{indentfirst}
+\usepackage{wrapfig}
+\usepackage{csquotes}
+\usepackage{svg}
+\usepackage{biblatex}
+\addbibresource{references.bib}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{mdframed}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{minted}
+\usepackage{enumitem}
+\usepackage{amsmath,bm}
+\setlist{nolistsep}
+\usepackage{cases}
+\usepackage{indentfirst}
+%Tô màu cho code
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    language=C,
+    aboveskip=3mm,
+    belowskip=3mm,
+    columns=flexible,
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    otherkeywords = {!,!=,~,\$,*,\&,\%/\%,\%*\%,\%\%, \%in\%,<-,<<-,/},
+    alsoletter={.,_}
+}
+\lstset{style=mystyle}
+\setlength\parindent{0pt}
+\renewcommand{\baselinestretch}{1.5}
+\usepackage{hyperref}
+\usetikzlibrary{arrows,snakes,backgrounds}
+\usepackage{tocloft}
+\newcommand{\Color}[1]{\hypersetup{\linkcolor = #1}\color{#1}}
+
+\usepackage{cmll}
+\hypersetup{urlcolor=blue, linkcolor=black, citecolor = black, colorlinks = true}
+\fontsize{13pt}{13pt}\selectfont
+\pagestyle{fancy}
+\setlength{\headheight}{24.5pt}
+\fancyhf{}
+\fancyhead{} % clear all header fields
+\fancyhead[L]{
+ \begin{tabular}{rl}
+    \begin{picture}(25,15)(0,0)
+    \put(0,-8){\includegraphics[width=8mm, height=11.8mm]{images/logo-hust.png}}
+   \end{picture}&
+	\begin{tabular}{l}
+		\textbf{\bf \ttfamily Hanoi University of Science and Technology}\\
+		\textbf{\bf \ttfamily School of Information and Communication Technology}
+	\end{tabular} 	
+ \end{tabular}
+}
+\fancyhead[R]{
+	\begin{tabular}{l}
+		\tiny \bf \\
+		\tiny \bf 
+	\end{tabular}  }
+\fancyfoot{} % clear all footer fields
+\fancyfoot[L]{Emoji Prediction on Social Media}
+\fancyfoot[R]{Page {\thepage}/\pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\footrulewidth}{0.3pt}
+\usepackage{tocloft}
+\renewcommand*\cftsecnumwidth{2em}% and may be also
+%\renewcommand*\cftchapnumwidth{2em}%
+\setlength{\parindent}{0pt}
+\begin{document}
+    \include{cover}
+    \include{abstract}
+    \renewcommand{\contentsname}{Table of Contents}
+    \tableofcontents 
+    \include{1_introduce}
+    \include{2_related_work}
+    \include{3_problem_formulation}
+    \include{4_methodology}
+    \include{5_experiment}
+    \include{6_conclusion}
+    \newpage
+    \printbibliography[title={References}]
+\end{document}

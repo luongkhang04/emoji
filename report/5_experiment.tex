@@ -1,0 +1,44 @@
+\section{EXPERIMENTS}
+
+\subsection{Experimental Protocol}
+Hyperparameters are tuned with \texttt{tune.py} using a train/validation split and a small, fixed grid per model family. The best configuration is selected by macro F1@1 and stored in \texttt{outputs/best\_params.json}. Final evaluation is performed with \texttt{train\_eval.py} on the held-out test set, producing \texttt{outputs/test\_results.csv}.
+
+All experiments use $k\in\{1,3,5\}$ for top-$k$ metrics and a fixed random seed (default 42). Neural models are trained with Adam/AdamW optimizers; Transformer fine-tuning uses a linear warmup/decay schedule \cite{devlin2019bert}.
+
+\subsection{Results}
+Table~\ref{tab:test-results} reports test performance for each model. The Transformer achieves the best overall results, improving both top-1 and top-5 accuracy over classical baselines.
+
+\begin{table}[H]
+    \centering
+    \caption{Test-set results (\texttt{outputs/test\_results.csv}).}
+    \label{tab:test-results}
+    \begin{tabular}{lrrr}
+        \toprule
+        Model & Top-1 Acc & Top-3 Acc & Top-5 Acc \\
+        \midrule
+        TF--IDF + SVM      & 0.2109 & 0.3602 & 0.4460 \\
+        TF--IDF + LogReg   & 0.2363 & 0.4170 & 0.5172 \\
+        TF--IDF + NB       & 0.2234 & 0.4064 & 0.5112 \\
+        FastText           & 0.2153 & 0.3996 & 0.5042 \\
+        TextCNN            & 0.2094 & 0.3821 & 0.4864 \\
+        BiLSTM + Attention & 0.2254 & 0.4064 & 0.5101 \\
+        BiGRU + Attention  & 0.2213 & 0.3983 & 0.5009 \\
+        Transformer        & \textbf{0.2632} & \textbf{0.4596} & \textbf{0.5659} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Discussion}
+Two trends are notable. First, strong TF--IDF baselines (especially logistic regression) remain competitive on short, noisy text. Second, the fine-tuned Transformer benefits from pretrained representations and achieves the best top-$k$ performance, which is important for emoji suggestion interfaces where multiple emojis can be shown to the user.
+
+\section{DEPLOYMENT}
+
+\subsection{Python Inference}
+The script \texttt{infer.py} provides a minimal CLI for running inference with a saved Hugging Face-style model directory (default \texttt{outputs/transformer\_deploy}). It loads the tokenizer and model, computes probabilities, and prints the top-$k$ predictions for each input text.
+
+\subsection{Browser Demo (Client-side ONNX)}
+The \texttt{docs/} directory contains a static web application that loads a local model using Transformers.js \cite{transformersjs}. Remote model downloads are disabled; all assets are served from \texttt{docs/models/emoji-model/}. The main UI (\texttt{docs/index.html}) provides real-time emoji suggestions while typing; \texttt{docs/debug.html} offers a debugging interface for batch predictions and latency measurements.
+
+\subsection{ONNX Export and Quantization}
+To enable browser inference, \texttt{scripts/export\_onnx.py} exports the Transformer model to ONNX \cite{onnx} and optionally applies dynamic quantization to int8 for smaller downloads and faster CPU execution. The exported model is stored under \texttt{docs/models/emoji-model/onnx/} and is consumed by the web app.
+

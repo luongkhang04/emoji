@@ -1,0 +1,5 @@
+\begin{center}
+    \textbf{\Large ABSTRACT}
+\end{center}
+\vspace{1em}
+Emoji usage is an important part of modern online communication, but selecting an appropriate emoji can interrupt writing flow. This report presents an end-to-end pipeline for \textbf{emoji prediction from text}: (i) constructing a cleaned tweet-style dataset with 43 emoji classes, (ii) benchmarking classical and neural text classifiers, and (iii) deploying the best model for client-side inference in the browser. We compare TF--IDF baselines (linear SVM, logistic regression, and Naive Bayes), FastText-style subword models, TextCNN, bidirectional RNNs with attention, and a fine-tuned DistilBERT Transformer \cite{joulin2017bag,kim2014cnn,sanh2019distilbert}. On the provided test split (83{,}543 samples), the Transformer achieves the best performance with \textbf{top-1 accuracy 26.3\%} and \textbf{top-5 accuracy 56.6\%}. Finally, we export the Transformer to quantized ONNX and integrate it into a static web demo using Transformers.js, enabling fast, privacy-preserving emoji suggestions directly in the browser \cite{onnx,transformersjs}.

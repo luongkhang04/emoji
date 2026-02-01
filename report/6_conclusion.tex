@@ -1,0 +1,7 @@
+\section{CONCLUSION}
+
+This report described a complete emoji prediction system from dataset construction to browser deployment. We benchmarked classical TF--IDF baselines, lightweight neural architectures, and a fine-tuned DistilBERT Transformer. On the provided test set, the Transformer achieved the best top-$k$ accuracy, making it well-suited for suggestion-based user interfaces. We also presented a practical deployment workflow based on ONNX export, quantization, and client-side inference via Transformers.js.
+
+\subsection{Limitations and Future Work}
+The current formulation predicts a \emph{single} emoji per text, while real messages may contain multiple emojis. Future work could explore multi-label prediction, calibration of confidence scores for better ranking, and domain adaptation to non-twitter text. Additionally, stronger pretrained models or multilingual training could improve robustness across topics and languages.
+

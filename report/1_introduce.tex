@@ -1,0 +1,25 @@
+\section{INTRODUCTION}
+
+\subsection{Motivation}
+Emojis enrich text with emotional nuance, emphasis, and cultural context. On social media and messaging platforms, users often add one or more emojis to convey sentiment (e.g., excitement, sarcasm), summarize a message, or increase engagement. However, manually choosing an emoji requires extra attention and can interrupt writing flow. A lightweight emoji suggestion system can improve user experience by predicting emojis from the text being written.
+
+\subsection{Scope of This Repository}
+This repository focuses on \textbf{single-label emoji prediction}: given a short English text (tweet-like sentence), predict exactly one emoji from a fixed set of 43 emojis. The repo includes:
+\begin{itemize}
+    \item A cleaned dataset split into train/test CSV files (\texttt{data/}).
+    \item A model benchmark suite covering classical baselines and neural architectures (\texttt{tune.py}, \texttt{train\_eval.py}, \texttt{ml.py}).
+    \item A Python inference helper for the deployed Transformer model (\texttt{infer.py}).
+    \item A browser deployment path based on ONNX + Transformers.js (\texttt{scripts/export\_onnx.py}, \texttt{docs/}).
+\end{itemize}
+
+\subsection{Contributions}
+The main contributions of this work are:
+\begin{itemize}
+    \item A practical preprocessing pipeline for tweet-style text with emoji removal and normalization.
+    \item A consistent evaluation framework for top-$k$ metrics over multiple model families.
+    \item A deployment workflow that exports the best Transformer model to quantized ONNX and runs it client-side in a static web application.
+\end{itemize}
+
+\subsection{Report Organization}
+Section~2 reviews related work in text classification and emoji prediction. Section~3 formalizes the task and evaluation metrics. Section~4 describes the dataset and preprocessing. Section~5 presents the models. Section~6 reports experiments and results. Section~7 describes deployment. Finally, Section~8 concludes and discusses limitations and future work.
+
