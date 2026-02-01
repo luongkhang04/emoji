@@ -36,12 +36,19 @@ function getCurrentSentence(text) {
   }
   const parts = trimmed.split(/[\n.!?]+/);
   for (let i = parts.length - 1; i >= 0; i -= 1) {
-    const sentence = parts[i].trim();
+    const sentence = stripEmojis(parts[i].trim());
     if (sentence) {
       return sentence;
     }
   }
-  return trimmed;
+  return stripEmojis(trimmed);
+}
+
+function stripEmojis(text) {
+  return text.replace(
+    /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu,
+    "",
+  );
 }
 
 function renderPlaceholders(message) {
