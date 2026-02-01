@@ -7,7 +7,7 @@ const DEBOUNCE_MS = 250;
 
 env.allowRemoteModels = false;
 env.localModelPath = MODEL_BASE_PATH;
-env.useBrowserCache = false;
+env.useBrowserCache = true;
 
 if (env.backends?.onnx?.wasm) {
   const threads = Math.max(1, Math.min(4, navigator.hardwareConcurrency || 4));
