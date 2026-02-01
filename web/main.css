@@ -1,0 +1,187 @@
+:root {
+  color-scheme: light;
+  --bg-1: #f8efe5;
+  --bg-2: #f0c9b4;
+  --bg-3: #c8e1d8;
+  --ink: #201b18;
+  --muted: #6a5a4f;
+  --card: rgba(255, 255, 255, 0.86);
+  --accent: #0c6c5b;
+  --accent-soft: rgba(12, 108, 91, 0.16);
+  --shadow: 0 20px 40px rgba(32, 27, 24, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Avenir Next", "Gill Sans MT", "Trebuchet MS", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 10% 20%, var(--bg-3), transparent 55%),
+    radial-gradient(circle at 80% 0%, rgba(239, 125, 69, 0.2), transparent 60%),
+    linear-gradient(140deg, var(--bg-1), var(--bg-2));
+}
+
+.composer {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 40px 20px 72px;
+  display: grid;
+  gap: 20px;
+}
+
+.brand {
+  display: grid;
+  gap: 8px;
+  animation: liftIn 0.6s ease;
+  text-align: center;
+}
+
+.eyebrow {
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.1rem, 4vw, 3.2rem);
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  max-width: 520px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+  display: grid;
+  gap: 16px;
+  animation: liftIn 0.7s ease;
+}
+
+.emoji-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  min-height: 64px;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-placeholder {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.emoji-chip {
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-size: 24px;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 8px 16px rgba(32, 27, 24, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.emoji-chip small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.emoji-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(32, 27, 24, 0.15);
+}
+
+textarea {
+  width: 100%;
+  border-radius: 18px;
+  border: 1px solid rgba(32, 27, 24, 0.12);
+  padding: 14px 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 160px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted);
+  align-items: center;
+}
+
+.status {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.copy-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--accent);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 20px rgba(32, 27, 24, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.copy-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(32, 27, 24, 0.15);
+}
+
+@keyframes liftIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 720px) {
+  .card {
+    padding: 18px;
+  }
+
+  .emoji-chip {
+    font-size: 22px;
+  }
+
+  textarea {
+    min-height: 140px;
+  }
+
+  .meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

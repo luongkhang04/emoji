@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Emoji Classifier Debug</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <p class="eyebrow">Client-side inference</p>
+        <h1>Emoji Classifier</h1>
+        <p class="subtitle">
+          Load the weights on demand, predict many texts in real time, then unload to free memory.
+        </p>
+      </header>
+
+      <section class="panel controls">
+        <div class="buttons">
+          <button id="loadBtn" class="primary">Load weights</button>
+          <button id="unloadBtn" class="ghost" disabled>Unload weights</button>
+        </div>
+        <label class="field">
+          <span>Top K</span>
+          <input id="topk" type="number" min="1" max="10" value="5" />
+        </label>
+        <div id="status" class="status">Model not loaded.</div>
+      </section>
+
+      <section class="panel input-panel">
+        <div class="panel-header">
+          <h2>Inputs</h2>
+          <div id="stats" class="stats">0 lines</div>
+        </div>
+        <textarea
+          id="input"
+          rows="8"
+          placeholder="Enter one text per line..."
+        ></textarea>
+      </section>
+
+      <section class="panel output-panel">
+        <div class="panel-header">
+          <h2>Predictions</h2>
+          <div id="latency" class="stats">Idle</div>
+        </div>
+        <div id="output" class="output">Load the model to start.</div>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

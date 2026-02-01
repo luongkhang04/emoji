@@ -1,0 +1,12 @@
+{
+  "batch_size": 32,
+  "epochs": 3,
+  "lr": 2e-05,
+  "max_len": 128,
+  "model_name": "distilbert-base-uncased",
+  "num_labels": 43,
+  "num_samples": 835428,
+  "seed": 42,
+  "test_path": "data/test_data.csv",
+  "train_path": "data/train_data.csv"
+}
