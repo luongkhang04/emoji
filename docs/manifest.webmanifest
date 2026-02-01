@@ -1,0 +1,24 @@
+{
+  "name": "Emoji Composer",
+  "short_name": "Emoji Composer",
+  "description": "Emoji suggestions as you type.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8efe5",
+  "theme_color": "#0c6c5b",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
