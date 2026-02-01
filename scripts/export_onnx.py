@@ -14,7 +14,7 @@ def parse_args() -> argparse.Namespace:
         description="Export a Transformers sequence-classification model to ONNX for Transformers.js.",
     )
     parser.add_argument("--model_dir", default="outputs/transformer_deploy")
-    parser.add_argument("--out_dir", default="web/models/emoji-model")
+    parser.add_argument("--out_dir", default="docs/models/emoji-model")
     parser.add_argument(
         "--opset",
         type=int,
