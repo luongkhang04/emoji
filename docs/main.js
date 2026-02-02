@@ -44,18 +44,19 @@ function getCurrentSentence(text) {
   return stripEmojis(trimmed);
 }
 
+const EMOJI_SEQUENCE_REGEX =
+  /\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)*|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu;
+const EMOJI_CHAR_REGEX = /[\p{Extended_Pictographic}\p{Emoji_Presentation}]/u;
+
 function stripEmojis(text) {
-  return text.replace(
-    /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu,
-    "",
-  );
+  return text.replace(EMOJI_SEQUENCE_REGEX, "");
 }
 
 function isEmojiChar(char) {
   if (!char) {
     return false;
   }
-  return /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/u.test(char);
+  return EMOJI_CHAR_REGEX.test(char);
 }
 
 function renderPlaceholders(message) {
