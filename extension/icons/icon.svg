@@ -1,0 +1,15 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 512 512"
+  width="512"
+  height="512"
+>
+  <!-- Emoji -->
+  <text
+    x="50%"
+    y="60%"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    font-size="400"
+  >😊</text>
+</svg>
