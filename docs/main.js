@@ -81,6 +81,10 @@ function renderSuggestions(predictions) {
   });
 }
 
+function getFirstSuggestion() {
+  return emojiBarEl.querySelector(".emoji-chip");
+}
+
 function insertEmoji(emoji) {
   const start = inputEl.selectionStart ?? inputEl.value.length;
   const end = inputEl.selectionEnd ?? inputEl.value.length;
@@ -176,6 +180,20 @@ async function loadModel() {
 }
 
 inputEl.addEventListener("input", scheduleSuggest);
+inputEl.addEventListener("keydown", (event) => {
+  if (event.key !== "Tab") {
+    return;
+  }
+  if (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) {
+    return;
+  }
+  const firstSuggestion = getFirstSuggestion();
+  if (!firstSuggestion) {
+    return;
+  }
+  event.preventDefault();
+  insertEmoji(firstSuggestion.textContent);
+});
 copyBtn.addEventListener("click", async () => {
   const text = inputEl.value;
   if (!text) {
