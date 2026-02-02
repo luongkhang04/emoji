@@ -51,6 +51,13 @@ function stripEmojis(text) {
   );
 }
 
+function isEmojiChar(char) {
+  if (!char) {
+    return false;
+  }
+  return /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/u.test(char);
+}
+
 function renderPlaceholders(message) {
   emojiBarEl.innerHTML = "";
   const placeholder = document.createElement("div");
@@ -80,10 +87,12 @@ function insertEmoji(emoji) {
   const before = inputEl.value.slice(0, start);
   const after = inputEl.value.slice(end);
   let insert = emoji;
-  if (before && !/\s$/.test(before)) {
+  const lastChar = before.slice(-1);
+  const firstChar = after.slice(0, 1);
+  if (before && !/\s$/.test(before) && !isEmojiChar(lastChar)) {
     insert = ` ${insert}`;
   }
-  if (after && !/^\s/.test(after)) {
+  if (after && !/^\s/.test(after) && !isEmojiChar(firstChar)) {
     insert = `${insert} `;
   }
   const nextValue = before + insert + after;
