@@ -1,0 +1,32 @@
+# Compiled files
+*.aux
+*.bbl
+*.blg
+*.brf
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.gz
+
+# Intermediate files from packages
+*.nav
+*.snm
+*.vrb
+
+# Editor-specific
+*~
+*.swp
+*.bak
+*.backup
+*.tmp
+
+*.xml
+*.bcf

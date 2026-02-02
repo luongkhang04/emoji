@@ -1,0 +1,305 @@
+\documentclass[t, aspectratio=169]{beamer} % Khai báo tỉ lệ cho Beamer biết
+\usepackage[utf8]{vietnam}
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage{lmodern}
+%\usepackage{times} % Đổi font chữ sang Times New Roman (không khuyến khích vì font xấu quá)
+
+% --- CẤU HÌNH LỀ (Phải đặt ở đây) ---
+\def\slideContentLeftMargin{0.5cm}  % Lề trái
+\def\slideContentRightMargin{1cm}   % Lề phải
+\def\hustHeaderHeight{1cm}        % Lề trên (Né thanh tiêu đề)
+\def\slideContentBotMargin{3.5cm}   % Lề dưới (Né logo/footer)
+
+
+% Thay đổi [red] thành [blue] để đổi màu
+% Thay đổi [169] thành [43] (nhớ đổi cả trong documentclass) để đổi tỉ lệ
+\usepackage[red, 169]{beamerthemeHUST} 
+
+% 1. Điều chỉnh vị trí cả khối title ở trang title
+\renewcommand{\titlePageTitleX}{-0.5cm}
+\renewcommand{\titlePageTitleY}{-0.5cm}
+
+% 2. Căn lề TỪNG THÀNH PHẦN của trang title
+% - Tiêu đề chính: Căn TRÁI
+\renewcommand{\hustTitleAlign}{\alignLeft} 
+
+% - Phụ đề: Căn TRÁI
+\renewcommand{\hustSubtitleAlign}{\alignLeft}
+
+% - Tác giả & Trường: Căn TRÁI
+\renewcommand{\hustAuthorAlign}{\alignLeft}
+\renewcommand{\hustInstAlign}{\alignLeft}
+
+
+% Bạn có thể dùng \\ để xuống dòng thủ công trong phần title
+\title{NGHIÊN CỨU VÀ ỨNG DỤNG MẠNG CNN TRONG NHẬN DIỆN ẢNH Y TẾ}
+%\subtitle{Báo cáo Đồ án tốt nghiệp - Nhóm FRC}
+% Bạn có thể dùng \\ để xuống dòng thủ công trong phần author
+\author{\texorpdfstring{Nguyễn Văn A - 2023xxxx \\ Trịnh Thị B - 2024xxxxx}{Nguyễn Văn A - 2023xxxx, Trịnh Thị B - 2024xxxxx}} 
+\institute{FRC - FaMI Rebel Club}
+%\date{\today}
+
+\begin{document}
+	
+	\hustintropage{} % Có thể comment trang này để tắt slide đi, nếu không muốn sử dụng.
+	\hustsectionpage{} % Có thể comment trang này để tắt slide đi, nếu không muốn sử dụng.
+	
+	
+	
+	
+	% Trang bìa
+	\husttitlepage
+	
+	\begin{frame}[allowframebreaks]{Nội dung trình bày}
+		\tableofcontents %Mục lục slide, sử dụng \tableofcontents[hideallsubsections] nếu mục lục quá dài, chỉ cần hiện các mục lớn.
+	\end{frame}
+	
+	\resetPageCount  % Đặt lại bộ đếm để trang Title là trang 1
+	\showPageNumber  % Bật hiển thị số trang (Sẽ hiện mãi mãi về sau)
+	
+	% =================================================================
+	% Có 6 lệnh tùy chỉnh slide, gồm \useThinBar và \useThickBar cho thanh kẻ slide trên cùng dày/mỏng và \useStyleFull, \useStyleLogoOnly, \useStyleHustFull, \useStyleHustOnly để đổi logo góc phải bên dưới. 
+	
+	%Mặc định khai báo của slide là \useThinBar và \useStyleFull.
+	% =================================================================
+	
+	
+	% =================================================================
+	% PHẦN NỘI DUNG 1: SỬ DỤNG STYLE MẶC ĐỊNH 
+	% =================================================================
+	\useStyleHustFull
+	\useThinBar 
+	
+	\section{Giới thiệu bài toán}
+	
+	\begin{frame}{1. Đặt vấn đề}
+		\textbf{Bối cảnh thực tế:}
+		\begin{itemize}
+			\item Nhu cầu chẩn đoán hình ảnh tự động ngày càng cao trong y tế thông minh.
+			\item Các phương pháp truyền thống tốn nhiều thời gian và phụ thuộc vào kinh nghiệm bác sĩ.
+			\item \textbf{Mục tiêu:} Xây dựng mô hình AI hỗ trợ chẩn đoán với độ chính xác $>95\%$.
+		\end{itemize}
+		
+		\vspace{1em}
+		
+		\textbf{Thách thức kỹ thuật:}
+		\begin{itemize}
+			\item Dữ liệu ảnh y tế thường bị nhiễu và mất cân bằng.
+			\item Yêu cầu khả năng giải thích (Explainable AI) cao.
+			\item \alert{Ràng buộc:} Phải chạy được trên các thiết bị Edge Device tại bệnh viện.
+		\end{itemize}
+	\end{frame}
+	
+	% =================================================================
+	% PHẦN NỘI DUNG 2: TOÁN HỌC (DEMO PAUSE & CÔNG THỨC)
+	% =================================================================
+	\section{Cơ sở lý thuyết}
+	
+	\begin{frame}{2. Phép tích chập (Convolution)}
+		Mạng CNN hoạt động dựa trên phép toán tích chập giữa ma trận ảnh đầu vào $I$ và bộ lọc (kernel) $K$.
+		
+		\pause % Dừng lại để thuyết trình, số trang sẽ tăng lên.
+		
+		\textbf{Công thức toán học:}
+		Cho ảnh đầu vào $I$ kích thước $H \times W$ và bộ lọc $K$ kích thước $k \times k$. Giá trị tại vị trí $(i, j)$ của bản đồ đặc trưng (feature map) $S$ được tính như sau:
+		
+		\begin{equation}
+			S(i, j) = (I * K)(i, j) = \sum_{m=0}^{k-1} \sum_{n=0}^{k-1} I(i+m, j+n) \cdot K(m, n)
+		\end{equation}
+		
+		\pause % Dừng lần nữa
+		
+		\textbf{Ý nghĩa:}
+		\begin{itemize}
+			\item Giúp trích xuất các đặc trưng cục bộ (cạnh, góc, vân bề mặt).
+			\item Giảm số lượng tham số cần huấn luyện so với mạng nơ-ron truyền thống (Fully Connected).
+		\end{itemize}
+ 	\end{frame}
+	
+	% =================================================================
+	% PHẦN NỘI DUNG 3: CHIA CỘT & ĐỔI GIAO DIỆN 
+	% =================================================================
+	\useStyleLogoOnly 
+	\useThickBar      
+	
+	\section{Kiến trúc đề xuất}
+	
+	\begin{frame}{3. Mô hình ResNet-50 cải tiến}
+		Chúng tôi đề xuất sử dụng kiến trúc ResNet-50 kết hợp với cơ chế Attention (CBAM).
+		
+		%\vspace{0.5cm}
+		
+		\begin{columns}[T] 
+			
+			% CỘT TRÁI: TEXT MÔ TẢ
+			\begin{column}{0.45\textwidth}
+				\begin{block}{Cải tiến chính}
+					\begin{enumerate}
+						\item \textbf{Module Attention:} Tập trung vào vùng bệnh lý, bỏ qua nền nhiễu.
+						\item \textbf{Loss Function:} Sử dụng Focal Loss thay cho Cross-Entropy để xử lý mất cân bằng dữ liệu.
+					\end{enumerate}
+				\end{block}
+				
+				\vspace{0.5em}
+				\small \textit{*Sơ đồ bên phải minh họa khối Residual Block cơ bản.}
+			\end{column}
+			
+			% CỘT PHẢI: MINH HỌA 
+			\begin{column}{0.55\textwidth}
+				\begin{alertblock}{Residual Block}
+					Đầu ra $y$ của một khối Residual được tính bằng:
+					\[ y = \mathcal{F}(x, \{W_i\}) + x \]
+					Trong đó:
+					\begin{itemize}
+						\item $x$: Đầu vào.
+						\item $\mathcal{F}$: Hàm mapping dư.
+					\end{itemize}
+					Việc cộng thêm $x$ giúp giải quyết vấn đề biến mất đạo hàm (vanishing gradient).
+				\end{alertblock}
+			\end{column}
+			
+		\end{columns}
+	\end{frame}
+	
+	\useThickBar        
+	\useStyleLogoOnly   
+	
+	\begin{frame}{Kết quả thực nghiệm}
+		% Sử dụng môi trường columns để chia cột
+		% [T] nghĩa là căn thẳng hàng phía trên 
+		\begin{columns}[T]
+			
+			% --- CỘT TRÁI: BẢNG BIỂU ---
+			\begin{column}{0.45\textwidth}
+				\begin{block}{So sánh độ chính xác (Accuracy)}
+					\centering % Căn giữa bảng trong block
+					% Bảng ví dụ cơ bản
+					\begin{tabular}{|l|c|c|}
+						\hline
+						\textbf{Mô hình} & \textbf{Top-1 (\%)} & \textbf{FPS} \\
+						\hline
+						ResNet-50 (Gốc) & 92.5 & 30 \\
+						\hline
+						VGG-16 & 89.1 & 24 \\
+						\hline
+						% Dòng này làm đậm để làm nổi bật kết quả của mình
+						\textbf{Đề xuất (Ours)} & \textbf{95.8} & \textbf{45} \\
+						\hline
+					\end{tabular}
+				\end{block}
+				
+				\vspace{1em} 
+				\footnotesize
+				\textit{*Số liệu được đo trên tập dữ liệu kiểm thử HUST-D1 (n=1000).}
+			\end{column}
+			
+			
+			% --- CỘT PHẢI: HÌNH ẢNH ---
+			\begin{column}{0.5\textwidth}
+				\begin{figure}
+					\centering
+					% -----------------------------------------------------------
+					% QUAN TRỌNG: Thay 'example-image' bằng tên file ảnh của bạn.
+					% Ví dụ: \includegraphics[width=0.95\textwidth]{chart-ket-qua.png}
+					% -----------------------------------------------------------
+					% Dưới đây là một khung giữ chỗ để demo:
+					\fbox{
+						\begin{minipage}[c][5cm]{0.9\textwidth}
+							\centering \vspace{2cm} \textbf{[CHỖ NÀY ĐỂ ẢNH]}
+						\end{minipage}
+					}
+					% -----------------------------------------------------------
+					
+					\caption{Biểu đồ trực quan hóa hiệu năng thời gian thực.}
+				\end{figure}
+			\end{column}
+			
+		\end{columns}
+	\end{frame}
+	
+	
+	% =================================================================
+	% PHẦN CUỐI: LIÊN HỆ & CẢM ƠN
+	% =================================================================
+	
+	% Trang liên hệ 
+	\hustcontactpage{\hfill THÔNG TIN LIÊN HỆ \hfill }{
+		\textbf{Nhóm nghiên cứu:} FRC - HUST \\
+		\textbf{Người hướng dẫn:} TS. Nguyễn Văn B \\
+		\vspace{0.5cm}
+		
+		\begin{itemize}
+			\item \textbf{Email:} \href{mailto:fami.rebel.club@gmail.com}{fami.rebel.club@gmail.com}
+			\item \textbf{Website:} \url{https://www.facebook.com/famirebelclub}
+			\item \textbf{Github:} \url{https://github.com/famirebelclub-creator}
+		\end{itemize}
+		
+		\vspace{1cm}
+		\textit{Xin chân thành cảm ơn Hội đồng đã lắng nghe!}
+	}
+	
+	% =================================================================
+	% TÀI LIỆU THAM KHẢO
+	% =================================================================
+	
+	% Đổi style nền cho thoáng (dễ đọc text nhiều)
+	\useStyleLogoOnly 
+	
+	% Cấu hình icon: Hiển thị số [1], [2] thay vì icon quyển sách mặc định
+	\setbeamertemplate{bibliography item}[text]
+	
+	\begin{frame}[allowframebreaks]{Tài liệu tham khảo}
+		
+		\begin{thebibliography}{99} % Số 99 nghĩa là căn lề cho danh sách 2 chữ số
+			
+			% --- TÀI LIỆU TIẾNG VIỆT ---
+			\bibitem{toancaocap}
+			Nguyễn Đình Trí (Chủ biên), Tạ Văn Đĩnh, Nguyễn Hồ Quỳnh,
+			\emph{Toán cao cấp (Tập 1: Đại số và Hình học giải tích)},
+			NXB Giáo dục Việt Nam, 2015.
+			
+			\bibitem{nhapmonai}
+			Đinh Mạnh Tường,
+			\emph{Giáo trình Trí tuệ nhân tạo},
+			NXB Khoa học và Kỹ thuật, 2012.
+			
+			% --- TÀI LIỆU TIẾNG ANH ---
+			\bibitem{resnet}
+			K. He, X. Zhang, S. Ren, and J. Sun,
+			``Deep Residual Learning for Image Recognition,''
+			in \emph{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+			pp. 770–778, 2016.
+			
+			\bibitem{lecun1998}
+			Y. LeCun, L. Bottou, Y. Bengio, and P. Haffner,
+			``Gradient-based learning applied to document recognition,''
+			\emph{Proceedings of the IEEE}, vol. 86, no. 11, pp. 2278–2324, 1998.
+			
+			\bibitem{goodfellow}
+			I. Goodfellow, Y. Bengio, and A. Courville,
+			\emph{Deep Learning},
+			MIT Press, 2016.
+			
+			% --- WEBSITE ---
+			\bibitem{pytorch}
+			PyTorch Foundation,
+			``PyTorch Documentation,''
+			\url{https://pytorch.org/docs/stable/index.html},
+			truy cập ngày \today.
+			
+			\bibitem{hustweb}
+			ĐH Bách khoa Hà Nội,
+			``Quy định về đào tạo đại học,''
+			\url{https://hust.edu.vn}, 2024.
+			
+		\end{thebibliography}
+	\end{frame}
+	
+	
+	% Nếu bạn KHÔNG muốn slide Thank You hiện số trang:
+	% \hidePageNumber
+	
+	% Trang kết thúc 
+	\hustthankyou
+	
+\end{document}
