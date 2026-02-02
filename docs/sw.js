@@ -1,4 +1,4 @@
-const CACHE_NAME = "emoji-composer-v1";
+const CACHE_NAME = "emoji-composer-v2";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -7,6 +7,12 @@ const CORE_ASSETS = [
   "./manifest.webmanifest",
   "./icons/icon.svg",
   "./icons/icon-maskable.svg",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/icon-maskable-192.png",
+  "./icons/icon-maskable-512.png",
+  "./screenshots/desktop.png",
+  "./screenshots/mobile.png",
 ];
 
 self.addEventListener("install", (event) => {
