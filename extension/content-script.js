@@ -158,22 +158,43 @@
     return stripEmojis(trimmed);
   }
 
-  function isEditable(el) {
+  function getEditableRoot(el) {
     if (!el) {
-      return false;
+      return null;
     }
-    if (el.readOnly || el.disabled) {
-      return false;
+    let node = el;
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      node = node.parentElement;
+      if (!node) {
+        return null;
+      }
     }
-    const tag = el.tagName;
+    if (node.readOnly || node.disabled) {
+      return null;
+    }
+    const tag = node.tagName;
     if (tag === "TEXTAREA") {
-      return true;
+      return node;
     }
     if (tag === "INPUT") {
-      const type = (el.type || "text").toLowerCase();
-      return ["text", "search", "url", "email", "tel"].includes(type);
+      const type = (node.type || "text").toLowerCase();
+      return ["text", "search", "url", "email", "tel"].includes(type) ? node : null;
     }
-    return Boolean(el.isContentEditable);
+    if (!node.isContentEditable) {
+      return null;
+    }
+    while (node && node.isContentEditable) {
+      const parent = node.parentElement;
+      if (!parent || !parent.isContentEditable) {
+        return node;
+      }
+      node = parent;
+    }
+    return null;
+  }
+
+  function isEditable(el) {
+    return Boolean(getEditableRoot(el));
   }
 
   function getTextFromTarget(target) {
@@ -187,6 +208,45 @@
       return target.innerText || target.textContent || "";
     }
     return "";
+  }
+
+  function isSelectionWithinTarget(target, selection) {
+    if (!target || !selection) {
+      return false;
+    }
+    const anchor = selection.anchorNode;
+    if (!anchor) {
+      return false;
+    }
+    if (target.contains(anchor)) {
+      return true;
+    }
+    if (!anchor.getRootNode) {
+      return false;
+    }
+    let root = anchor.getRootNode();
+    while (root && root.host) {
+      if (target.contains(root.host)) {
+        return true;
+      }
+      root = root.host.getRootNode ? root.host.getRootNode() : null;
+    }
+    return false;
+  }
+
+  function tryExecCommandInsert(text) {
+    try {
+      if (document.queryCommandSupported && !document.queryCommandSupported("insertText")) {
+        return false;
+      }
+    } catch (err) {
+      // Some pages block queryCommandSupported.
+    }
+    try {
+      return document.execCommand("insertText", false, text);
+    } catch (err) {
+      return false;
+    }
   }
 
   function ensureSuggestionEl() {
@@ -374,7 +434,7 @@
       return;
     }
     const range = selection.getRangeAt(0);
-    if (!target.contains(range.startContainer)) {
+    if (!isSelectionWithinTarget(target, selection)) {
       return;
     }
     let prefix = "";
@@ -395,7 +455,11 @@
         suffix = "";
       }
     }
-    const textNode = document.createTextNode(`${prefix}${emoji}${suffix}`);
+    const insertText = `${prefix}${emoji}${suffix}`;
+    if (tryExecCommandInsert(insertText)) {
+      return;
+    }
+    const textNode = document.createTextNode(insertText);
     range.deleteContents();
     range.insertNode(textNode);
     range.setStartAfter(textNode);
@@ -417,8 +481,8 @@
   }
 
   function handleInput(event) {
-    const target = event.target;
-    if (!isEditable(target)) {
+    const target = getEditableRoot(event.target);
+    if (!target) {
       return;
     }
     activeTarget = target;
@@ -426,8 +490,8 @@
   }
 
   function handleFocusIn(event) {
-    const target = event.target;
-    if (!isEditable(target)) {
+    const target = getEditableRoot(event.target);
+    if (!target) {
       activeTarget = null;
       hideSuggestion();
       return;
@@ -440,16 +504,28 @@
   }
 
   function handleKeydown(event) {
-    if (event.key !== "Tab") {
+    const isTab =
+      event.key === "Tab" ||
+      event.code === "Tab" ||
+      event.keyCode === 9;
+    if (!isTab) {
+      return;
+    }
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+      return;
+    }
+    if (event.defaultPrevented) {
       return;
     }
     if (!suggestion || !activeTarget) {
       return;
     }
-    if (event.target !== activeTarget) {
+    const target = getEditableRoot(event.target);
+    if (!target || target !== activeTarget) {
       return;
     }
     event.preventDefault();
+    event.stopPropagation();
     applySuggestion(activeTarget, suggestion.emoji);
     hideSuggestion();
   }
@@ -457,6 +533,7 @@
   document.addEventListener("input", handleInput, true);
   document.addEventListener("focusin", handleFocusIn, true);
   document.addEventListener("keydown", handleKeydown, true);
+  window.addEventListener("keydown", handleKeydown, true);
   window.addEventListener(
     "scroll",
     () => {
