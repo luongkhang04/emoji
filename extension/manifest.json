@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Emoji Suggest",
+  "version": "0.1.0",
+  "description": "Suggests a single emoji while typing; press Tab to insert.",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"],
+      "css": ["content-style.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["models/**", "vendor/**"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

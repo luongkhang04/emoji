@@ -1,0 +1,35 @@
+.emoji-suggest-overlay {
+  position: absolute;
+  z-index: 2147483647;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  background: rgba(15, 17, 20, 0.95);
+  color: #f7f7f7;
+  font-family: "Segoe UI", "Arial", sans-serif;
+  font-size: 12px;
+  line-height: 1;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  user-select: none;
+  pointer-events: auto;
+}
+
+.emoji-suggest-overlay.visible {
+  display: inline-flex;
+}
+
+.emoji-suggest-emoji {
+  font-size: 16px;
+}
+
+.emoji-suggest-key {
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-bottom-width: 2px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
