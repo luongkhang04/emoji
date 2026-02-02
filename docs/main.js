@@ -44,19 +44,51 @@ function getCurrentSentence(text) {
   return stripEmojis(trimmed);
 }
 
-const EMOJI_SEQUENCE_REGEX =
-  /\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)*|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu;
-const EMOJI_CHAR_REGEX = /[\p{Extended_Pictographic}\p{Emoji_Presentation}]/u;
+const EMOJI_SEQUENCE_SOURCE =
+  "\\p{Extended_Pictographic}(?:\\uFE0F|\\uFE0E)?(?:\\u200D\\p{Extended_Pictographic}(?:\\uFE0F|\\uFE0E)?)*|\\p{Emoji_Presentation}|\\p{Emoji}\\uFE0F";
+const EMOJI_SEQUENCE_REGEX = new RegExp(EMOJI_SEQUENCE_SOURCE, "gu");
+const EMOJI_SEQUENCE_TEST_REGEX = new RegExp(EMOJI_SEQUENCE_SOURCE, "u");
+const graphemeSegmenter =
+  typeof Intl !== "undefined" && Intl.Segmenter
+    ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
+    : null;
 
 function stripEmojis(text) {
   return text.replace(EMOJI_SEQUENCE_REGEX, "");
+}
+
+function getFirstGrapheme(text) {
+  if (!text) {
+    return "";
+  }
+  if (graphemeSegmenter) {
+    const iterator = graphemeSegmenter.segment(text)[Symbol.iterator]();
+    const first = iterator.next();
+    return first.done ? "" : first.value.segment;
+  }
+  return Array.from(text)[0] || "";
+}
+
+function getLastGrapheme(text) {
+  if (!text) {
+    return "";
+  }
+  if (graphemeSegmenter) {
+    let last = "";
+    for (const part of graphemeSegmenter.segment(text)) {
+      last = part.segment;
+    }
+    return last;
+  }
+  const chars = Array.from(text);
+  return chars[chars.length - 1] || "";
 }
 
 function isEmojiChar(char) {
   if (!char) {
     return false;
   }
-  return EMOJI_CHAR_REGEX.test(char);
+  return EMOJI_SEQUENCE_TEST_REGEX.test(char);
 }
 
 function renderPlaceholders(message) {
@@ -92,8 +124,8 @@ function insertEmoji(emoji) {
   const before = inputEl.value.slice(0, start);
   const after = inputEl.value.slice(end);
   let insert = emoji;
-  const lastChar = before.slice(-1);
-  const firstChar = after.slice(0, 1);
+  const lastChar = getLastGrapheme(before);
+  const firstChar = getFirstGrapheme(after);
   if (before && !/\s$/.test(before) && !isEmojiChar(lastChar)) {
     insert = ` ${insert}`;
   }
