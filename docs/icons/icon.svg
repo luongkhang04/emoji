@@ -4,31 +4,12 @@
   width="512"
   height="512"
 >
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#d7ebe4"/>
-      <stop offset="100%" stop-color="#f3c6a8"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Rounded background -->
-  <rect
-    x="0"
-    y="0"
-    width="512"
-    height="512"
-    rx="96"
-    fill="url(#bg)"
-  />
-
   <!-- Emoji -->
   <text
     x="50%"
-    y="54%"
+    y="60%"
     text-anchor="middle"
     dominant-baseline="middle"
-    font-size="260"
-  >
-    😊
-  </text>
+    font-size="400"
+  >😊</text>
 </svg>
