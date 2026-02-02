@@ -224,7 +224,9 @@
       return;
     }
     const padding = 8;
-    const top = window.scrollY + rect.bottom + 6;
+    const aboveTop = window.scrollY + rect.top - suggestionEl.offsetHeight - 6;
+    const belowTop = window.scrollY + rect.bottom + 6;
+    const top = aboveTop >= padding ? aboveTop : belowTop;
     const maxLeft =
       window.scrollX +
       document.documentElement.clientWidth -
