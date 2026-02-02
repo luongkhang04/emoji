@@ -104,6 +104,13 @@
     );
   }
 
+  function isEmojiChar(char) {
+    if (!char) {
+      return false;
+    }
+    return /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/u.test(char);
+  }
+
   function getCurrentSentence(text) {
     const trimmed = text.trim();
     if (!trimmed) {
@@ -314,10 +321,12 @@
     const before = target.value.slice(0, start);
     const after = target.value.slice(end);
     let insert = emoji;
-    if (before && !/\s$/.test(before)) {
+    const lastChar = before.slice(-1);
+    const firstChar = after.slice(0, 1);
+    if (before && !/\s$/.test(before) && !isEmojiChar(lastChar)) {
       insert = ` ${insert}`;
     }
-    if (after && !/^\s/.test(after)) {
+    if (after && !/^\s/.test(after) && !isEmojiChar(firstChar)) {
       insert = `${insert} `;
     }
     const nextValue = before + insert + after;
@@ -340,11 +349,21 @@
     if (range.startContainer.nodeType === Node.TEXT_NODE) {
       const text = range.startContainer.textContent || "";
       const before = text.slice(0, range.startOffset);
-      if (before && !/\s$/.test(before)) {
+      const lastChar = before.slice(-1);
+      if (before && !/\s$/.test(before) && !isEmojiChar(lastChar)) {
         prefix = " ";
       }
     }
-    const textNode = document.createTextNode(`${prefix}${emoji} `);
+    let suffix = " ";
+    if (range.startContainer.nodeType === Node.TEXT_NODE) {
+      const text = range.startContainer.textContent || "";
+      const after = text.slice(range.startOffset);
+      const firstChar = after.slice(0, 1);
+      if (!after || /^\s/.test(after) || isEmojiChar(firstChar)) {
+        suffix = "";
+      }
+    }
+    const textNode = document.createTextNode(`${prefix}${emoji}${suffix}`);
     range.deleteContents();
     range.insertNode(textNode);
     range.setStartAfter(textNode);
