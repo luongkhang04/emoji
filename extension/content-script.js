@@ -7,6 +7,14 @@
   const WASM_BASE_PATH = chrome.runtime.getURL("vendor/");
   const SUGGESTION_THRESHOLD_PERCENT = 10;
   const DEBOUNCE_MS = 200;
+  const EMOJI_SEQUENCE_SOURCE =
+    "\\p{Extended_Pictographic}(?:\\uFE0F|\\uFE0E)?(?:\\u200D\\p{Extended_Pictographic}(?:\\uFE0F|\\uFE0E)?)*|\\p{Emoji_Presentation}|\\p{Emoji}\\uFE0F";
+  const EMOJI_SEQUENCE_REGEX = new RegExp(EMOJI_SEQUENCE_SOURCE, "gu");
+  const EMOJI_SEQUENCE_TEST_REGEX = new RegExp(EMOJI_SEQUENCE_SOURCE, "u");
+  const graphemeSegmenter =
+    typeof Intl !== "undefined" && Intl.Segmenter
+      ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
+      : null;
 
   let pipe = null;
   let pipePromise = null;
@@ -98,17 +106,41 @@
   }
 
   function stripEmojis(text) {
-    return text.replace(
-      /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu,
-      "",
-    );
+    return text.replace(EMOJI_SEQUENCE_REGEX, "");
+  }
+
+  function getFirstGrapheme(text) {
+    if (!text) {
+      return "";
+    }
+    if (graphemeSegmenter) {
+      const iterator = graphemeSegmenter.segment(text)[Symbol.iterator]();
+      const first = iterator.next();
+      return first.done ? "" : first.value.segment;
+    }
+    return Array.from(text)[0] || "";
+  }
+
+  function getLastGrapheme(text) {
+    if (!text) {
+      return "";
+    }
+    if (graphemeSegmenter) {
+      let last = "";
+      for (const part of graphemeSegmenter.segment(text)) {
+        last = part.segment;
+      }
+      return last;
+    }
+    const chars = Array.from(text);
+    return chars[chars.length - 1] || "";
   }
 
   function isEmojiChar(char) {
     if (!char) {
       return false;
     }
-    return /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/u.test(char);
+    return EMOJI_SEQUENCE_TEST_REGEX.test(char);
   }
 
   function getCurrentSentence(text) {
@@ -321,8 +353,8 @@
     const before = target.value.slice(0, start);
     const after = target.value.slice(end);
     let insert = emoji;
-    const lastChar = before.slice(-1);
-    const firstChar = after.slice(0, 1);
+    const lastChar = getLastGrapheme(before);
+    const firstChar = getFirstGrapheme(after);
     if (before && !/\s$/.test(before) && !isEmojiChar(lastChar)) {
       insert = ` ${insert}`;
     }
@@ -349,7 +381,7 @@
     if (range.startContainer.nodeType === Node.TEXT_NODE) {
       const text = range.startContainer.textContent || "";
       const before = text.slice(0, range.startOffset);
-      const lastChar = before.slice(-1);
+      const lastChar = getLastGrapheme(before);
       if (before && !/\s$/.test(before) && !isEmojiChar(lastChar)) {
         prefix = " ";
       }
@@ -358,7 +390,7 @@
     if (range.startContainer.nodeType === Node.TEXT_NODE) {
       const text = range.startContainer.textContent || "";
       const after = text.slice(range.startOffset);
-      const firstChar = after.slice(0, 1);
+      const firstChar = getFirstGrapheme(after);
       if (!after || /^\s/.test(after) || isEmojiChar(firstChar)) {
         suffix = "";
       }
