@@ -1,25 +1,37 @@
 \section{INTRODUCTION}
 
 \subsection{Motivation}
-Emojis enrich text with emotional nuance, emphasis, and cultural context. On social media and messaging platforms, users often add one or more emojis to convey sentiment (e.g., excitement, sarcasm), summarize a message, or increase engagement. However, manually choosing an emoji requires extra attention and can interrupt writing flow. A lightweight emoji suggestion system can improve user experience by predicting emojis from the text being written.
+Emojis have become a standard layer of meaning in online writing. Beyond decoration, they often convey
+affect (e.g., joy, frustration), modulate tone (e.g., irony, teasing), or compress an intention into a single
+symbol that readers recognize instantly. On social media, where messages are short and context is limited,
+this extra signal can materially change how a post is interpreted and how much engagement it receives.
 
-\subsection{Scope of This Repository}
-This repository focuses on \textbf{single-label emoji prediction}: given a short English text (tweet-like sentence), predict exactly one emoji from a fixed set of 43 emojis. The repo includes:
+Despite their usefulness, selecting an emoji is a small but frequent interruption: users must pause,
+open an emoji panel, search or scroll, and decide among visually similar candidates. This friction is
+especially noticeable on mobile devices and in fast-paced chat. An emoji suggestion system that predicts
+likely emojis from the text being typed can reduce this overhead and support smoother, more expressive
+communication. In this report, we study emoji prediction as a text classification problem and build an
+end-to-end pipeline that is accurate enough for interactive use.
+
+\subsection{Scope of This Work}
+We focus on \emph{single-label} emoji prediction: given a short English, tweet-like text, the system predicts
+exactly one emoji from a fixed inventory of 43 classes. This setting matches common UI patterns such as
+showing a top suggestion or a short ranked list of candidates while a user types.
+
+The accompanying code and assets include:
 \begin{itemize}
-    \item A cleaned dataset split into train/test CSV files (\texttt{data/}).
-    \item A model benchmark suite covering classical baselines and neural architectures (\texttt{tune.py}, \texttt{train\_eval.py}, \texttt{ml.py}).
-    \item A Python inference helper for the deployed Transformer model (\texttt{infer.py}).
-    \item A browser deployment path based on ONNX + Transformers.js (\texttt{scripts/export\_onnx.py}, \texttt{docs/}).
+    \item a cleaned dataset split into training and test CSV files;
+    \item training and evaluation scripts that benchmark classical baselines and neural architectures under a consistent protocol;
+    \item a lightweight Python inference interface for the best-performing Transformer checkpoint;
+    \item a client-side deployment workflow that exports the trained model to ONNX (with quantization) and runs inference locally in the browser.
 \end{itemize}
+By keeping inference on-device (in the browser), the system can provide low-latency suggestions without
+sending user text to a remote server, which is desirable for privacy and ease of deployment.
 
 \subsection{Contributions}
-The main contributions of this work are:
+The main contributions of this report are:
 \begin{itemize}
-    \item A practical preprocessing pipeline for tweet-style text with emoji removal and normalization.
-    \item A consistent evaluation framework for top-$k$ metrics over multiple model families.
-    \item A deployment workflow that exports the best Transformer model to quantized ONNX and runs it client-side in a static web application.
+    \item a practical preprocessing pipeline tailored to noisy, tweet-style text, including normalization and emoji removal for label purity;
+    \item a unified benchmarking setup comparing sparse TF--IDF baselines and multiple neural model families using top-$k$ accuracy metrics;
+    \item an end-to-end deployment path that converts the strongest model to a quantized ONNX format and integrates it into a static web demo for fast, local inference.
 \end{itemize}
-
-\subsection{Report Organization}
-Section~2 reviews related work in text classification and emoji prediction. Section~3 formalizes the task and evaluation metrics. Section~4 describes the dataset and preprocessing. Section~5 presents the models. Section~6 reports experiments and results. Section~7 describes deployment. Finally, Section~8 concludes and discusses limitations and future work.
-

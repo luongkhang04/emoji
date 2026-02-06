@@ -1,19 +1,73 @@
 \section{RELATED WORK}
+\label{sec:related_work}
 
-\subsection{Emoji Prediction and Text Classification}
-Emoji prediction can be viewed as standard multi-class text classification, closely related to sentiment analysis and emotion recognition in social media text. Classical pipelines typically rely on sparse lexical features (e.g., TF--IDF over word/character $n$-grams) paired with linear classifiers. These methods are strong baselines for short-text tasks and remain competitive when data is limited \cite{manning2008ir}.
+Emoji prediction sits at the intersection of short-text classification, sentiment/emotion analysis, and
+representation learning from noisy social signals. This section reviews (i) prior work directly targeting
+emoji prediction, (ii) sentiment/emotion classification lines of research that are methodologically close,
+and (iii) recent trends in lightweight deployment of neural NLP models---then positions our work within
+these threads. \par\medskip
+\noindent\textit{Context of this report.} Our project frames emoji prediction as single-label multi-class
+classification over 43 emojis on tweet-style English text, benchmarks classical and neural model families,
+and deploys the best model for fully client-side inference in the browser. \,\textit{(See overall report for
+full details.)}
 
-\subsection{Neural Models for Text}
-Neural approaches learn task-specific representations and can better capture compositional patterns beyond surface $n$-grams:
+\subsection{Emoji prediction from text}
+A major catalyst for emoji prediction research is the SemEval-2018 Task 2 shared task on \emph{Multilingual
+Emoji Prediction}, which formalized the problem as predicting the most likely emoji given a tweet and
+evaluated systems using macro F1 across emoji classes (English and Spanish subtasks). The shared-task
+setting highlighted practical issues central to emoji prediction: label ambiguity, topical vs.\ affective
+signals, and class imbalance in naturally occurring emoji frequencies. \cite{barbieri2018semeval}
+
+Beyond shared tasks, emoji supervision has been used at web scale to learn transferable affective
+representations. DeepMoji trains a model on \(\sim\)1.2B tweets labeled by emojis, showing that emoji
+prediction can act as a strong form of distant supervision and transfer effectively to sentiment, emotion,
+and sarcasm detection benchmarks. \cite{felbo2017deepmoji}
+This line of work motivates the use of pretrained language models (or large-scale pretraining) for
+emoji-related tasks: emojis are not merely ``decorations'' but weak labels for underlying affect and
+pragmatics.
+
+More recently, transformer-based approaches (e.g., BERT-style fine-tuning) have been explored for emoji
+prediction, typically reporting improvements over bag-of-words and earlier neural baselines due to
+contextual representations and better handling of polysemy and compositionality. \cite{devlin2019bert}
+\cite{vaswani2017attention}
+These findings align with broader text-classification results where pretrained transformers dominate,
+especially when fine-tuned on in-domain short text.
+
+\subsection{Connections to sentiment and emotion classification}
+Emoji prediction is tightly related to sentiment analysis and emotion recognition: both aim to map a short
+utterance into an affective or expressive category. Classical sentiment pipelines often combine sparse
+lexical features (word/character \(n\)-grams with TF--IDF) with linear classifiers, which remain strong
+baselines for short, noisy text due to their robustness and low variance. \cite{manning2008ir}
+While sentiment analysis typically uses coarse labels (positive/negative/neutral) or a small set of
+emotions, emoji prediction expands the label space and introduces additional complexity: many emojis are
+topic- or event-linked (e.g., sports, food), and multiple emojis can plausibly fit the same text.
+
+Neural architectures developed for sentence classification (FastText-style subword models, CNNs, RNNs
+with attention) are commonly applied to both sentiment and emoji prediction because they capture
+morphology, local phrases, and limited sequential context efficiently. \cite{joulin2017bag}
+\cite{kim2014cnn} These models provide a middle ground between sparse linear
+baselines and large pretrained transformers.
+
+\subsection{How our work differs}
+Compared with prior emoji-prediction work (e.g., SemEval-style settings and large-scale distant
+supervision), our contribution is \emph{system-oriented and end-to-end}:
+
 \begin{itemize}
-    \item \textbf{FastText-style models} use word embeddings with subword $n$-grams to handle misspellings and morphological variations efficiently \cite{joulin2017bag}.
-    \item \textbf{Convolutional architectures} (TextCNN) extract local $n$-gram features using 1D convolutions and max pooling, often performing strongly on sentence classification \cite{kim2014cnn}.
-    \item \textbf{Recurrent encoders} (LSTM/GRU) capture sequential context; attention mechanisms improve pooling by weighting informative tokens more heavily \cite{bahdanau2015neural}.
+    \item \textbf{Controlled label space and benchmarking.} Instead of focusing on leaderboard systems or
+    extremely large emoji inventories, we target a fixed set of 43 emojis and provide a consistent,
+    reproducible benchmark across classical TF--IDF baselines, lightweight neural models, and a fine-tuned
+    transformer. This emphasizes practical trade-offs (accuracy vs.\ simplicity) under a unified protocol.
+    \item \textbf{Top-\(k\) evaluation for suggestion interfaces.} Many texts admit multiple reasonable emojis,
+    so we report ranking-oriented metrics (Acc@\(k\)) that better match real autocomplete/suggestion UX
+    than strict top-1 accuracy.
+    \item \textbf{Deployment as a first-class objective.} While much prior work stops at modeling results, we
+    prioritize \emph{privacy-preserving, client-side} inference by exporting the best transformer model to
+    ONNX and running it in-browser via Transformers.js / ONNX Runtime Web, enabling offline-capable emoji
+    suggestions without server-side text logging.
 \end{itemize}
 
-\subsection{Transformers}
-Transformers replace recurrence with self-attention and dominate many NLP benchmarks \cite{vaswani2017attention}. Large pretrained models such as BERT \cite{devlin2019bert} and its compressed variants such as DistilBERT \cite{sanh2019distilbert} can be fine-tuned for downstream classification tasks with relatively small changes to the model head.
-
-\subsection{Client-side Deployment}
-Running NLP models in the browser is increasingly feasible via ONNX export and WebAssembly backends. ONNX provides an interoperable model format \cite{onnx}, and Transformers.js enables local model loading and inference in JavaScript applications \cite{transformersjs}. This repo leverages both to deliver privacy-preserving emoji suggestions without server-side inference.
-
+Overall, the literature suggests a clear progression: sparse linear baselines provide strong performance
+for short social text; lightweight neural models add robustness and limited compositionality; and
+pretrained transformers achieve the best accuracy by leveraging contextual representations. Our work
+follows this progression but extends it with an end-to-end pipeline and a deployment path designed for
+interactive emoji suggestion in real user environments.

@@ -1,12 +1,41 @@
 \section{EXPERIMENTS}
 
 \subsection{Experimental Protocol}
-Hyperparameters are tuned with \texttt{tune.py} using a train/validation split and a small, fixed grid per model family. The best configuration is selected by macro F1@1 and stored in \texttt{outputs/best\_params.json}. Final evaluation is performed with \texttt{train\_eval.py} on the held-out test set, producing \texttt{outputs/test\_results.csv}.
+All models are trained and evaluated on the dataset split summarized in Table~\ref{tab:dataset-stats}. Hyperparameter selection is performed using only the training split (\texttt{data/train\_data.csv}). Concretely, \texttt{tune.py} creates a stratified train/validation split with 80\% of the training data used for fitting and 20\% used for validation (\texttt{--val\_size 0.2}), using a fixed random seed of 42 for reproducibility. For each model family, we evaluate a small, fixed grid of candidate configurations; each configuration is trained on the tuning-train split and scored on the tuning-validation split. The best configuration for each model is stored in \texttt{outputs/best\_params.json}. All tuning trials and their validation metrics are stored in \texttt{outputs/tuning\_results.csv}.
 
-All experiments use $k\in\{1,3,5\}$ for top-$k$ metrics and a fixed random seed (default 42). Neural models are trained with Adam/AdamW optimizers; Transformer fine-tuning uses a linear warmup/decay schedule \cite{devlin2019bert}.
+Classical baselines (TF--IDF + linear classifiers) are implemented as scikit-learn pipelines consisting of a FeatureUnion of word and character TF--IDF vectorizers, followed by a linear classifier (Linear SVM, multinomial Naive Bayes, or multinomial logistic regression). Neural baselines (FastText, TextCNN, and RNNs with attention) are implemented in PyTorch and optimized with Adam; during tuning, they use early stopping with patience 2 on the validation split. For these models, we build a word vocabulary from the tuning-train split only (maximum 50{,}000 tokens, minimum frequency 2) and truncate sequences to the configured maximum length. The Transformer is fine-tuned end-to-end with AdamW using a linear warmup/decay learning-rate schedule \cite{devlin2019bert}; we keep the epoch that yields the best validation performance.
+
+Final testing is performed with \texttt{train\_eval.py}. For each model, we retrain using the selected hyperparameters on the full training set and evaluate once on the held-out test set (\texttt{data/test\_data.csv}), producing \texttt{outputs/test\_results.csv}. Unless specified otherwise, we report Acc@1, Acc@3, and Acc@5 and select the compute device automatically (\texttt{cuda} if available, otherwise CPU).
+
+\subsection{Evaluation Metrics}
+For an input text $x$, the model produces a score vector over the $C=43$ emoji classes. Accuracy@k (Acc@k) counts a prediction as correct if the ground-truth emoji appears among the $k$ highest-scoring classes. We report Acc@1, Acc@3, and Acc@5.
+
+\subsection{Chosen Hyperparameters}
+Table~\ref{tab:tuned-params} summarizes the selected configuration for each model and the corresponding validation Acc@k. Full per-trial results are available in \texttt{outputs/tuning\_results.csv}.
+
+\begin{table}[H]
+    \centering
+    \caption{Selected hyperparameters and validation accuracies (see \texttt{outputs/best\_params.json} and \texttt{outputs/tuning\_results.csv}).}
+    \label{tab:tuned-params}
+    \footnotesize
+    \begin{tabularx}{\linewidth}{l r r r X}
+        \toprule
+        Model & Val Acc@1 & Val Acc@3 & Val Acc@5 & Selected hyperparameters \\
+        \midrule
+        TF--IDF + SVM & 0.2047 & 0.3519 & 0.4377 & word $n$-grams: 1--2; char $n$-grams: 3--5; min df: 2; max features: 200k; $C=1.0$; class weights: balanced. \\
+        TF--IDF + LogReg & 0.2308 & 0.4086 & 0.5094 & word $n$-grams: 1--2; char $n$-grams: 3--5; min df: 2; max features: 200k; $C=2.0$ (solver: saga). \\
+        TF--IDF + NB & 0.2189 & 0.4023 & 0.5068 & word $n$-grams: 1--2; char $n$-grams: 3--5; min df: 2; max features: 200k; $\alpha=0.5$. \\
+        FastText & 0.2112 & 0.3935 & 0.4967 & embed dim: 100; dropout: 0.2; lr: $10^{-3}$; epochs: 5; batch size: 128; min/max subword $n$: 3/6; buckets: 200k; max words: 200; max subword n-grams: 2000. \\
+        TextCNN & 0.2015 & 0.3747 & 0.4772 & embed dim: 200; filters: 128; filter sizes: 3, 4, 5; dropout: 0.5; lr: $5\times10^{-4}$; epochs: 6; batch size: 128; max length: 200. \\
+        BiLSTM + Attention & 0.2118 & 0.3906 & 0.4924 & embed dim: 100; hidden size: 128; dropout: 0.4; lr: $10^{-3}$; epochs: 6; batch size: 128; max length: 200. \\
+        BiGRU + Attention & 0.2129 & 0.3913 & 0.4942 & embed dim: 100; hidden size: 128; dropout: 0.4; lr: $10^{-3}$; epochs: 6; batch size: 128; max length: 200. \\
+        Transformer & 0.2544 & 0.4531 & 0.5588 & DistilBERT (\texttt{distilbert-base-uncased}); lr: $2\times10^{-5}$; epochs: 3; batch size: 32; max length: 128. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
 
 \subsection{Results}
-Table~\ref{tab:test-results} reports test performance for each model. The Transformer achieves the best overall results, improving both top-1 and top-5 accuracy over classical baselines.
+Table~\ref{tab:test-results} reports test performance for each model. The Transformer achieves the best overall results, improving Acc@1/Acc@3/Acc@5 over classical baselines.
 
 \begin{table}[H]
     \centering
@@ -14,7 +43,7 @@ Table~\ref{tab:test-results} reports test performance for each model. The Transf
     \label{tab:test-results}
     \begin{tabular}{lrrr}
         \toprule
-        Model & Top-1 Acc & Top-3 Acc & Top-5 Acc \\
+        Model & Acc@1 & Acc@3 & Acc@5 \\
         \midrule
         TF--IDF + SVM      & 0.2109 & 0.3602 & 0.4460 \\
         TF--IDF + LogReg   & 0.2363 & 0.4170 & 0.5172 \\
@@ -29,16 +58,91 @@ Table~\ref{tab:test-results} reports test performance for each model. The Transf
 \end{table}
 
 \subsection{Discussion}
-Two trends are notable. First, strong TF--IDF baselines (especially logistic regression) remain competitive on short, noisy text. Second, the fine-tuned Transformer benefits from pretrained representations and achieves the best top-$k$ performance, which is important for emoji suggestion interfaces where multiple emojis can be shown to the user.
+Two trends are notable. First, strong TF--IDF baselines (especially logistic regression) remain competitive on short, noisy text, suggesting that sparse $n$-gram features still capture a large fraction of the signal for this task. Second, the fine-tuned Transformer benefits from pretrained contextual representations and achieves the best Acc@k. In particular, it improves Acc@1 from 0.2363 (best classical baseline) to 0.2632, Acc@3 from 0.4170 to 0.4596, and Acc@5 from 0.5172 to 0.5659 (Table~\ref{tab:test-results}).
 
+\newpage
 \section{DEPLOYMENT}
 
-\subsection{Python Inference}
-The script \texttt{infer.py} provides a minimal CLI for running inference with a saved Hugging Face-style model directory (default \texttt{outputs/transformer\_deploy}). It loads the tokenizer and model, computes probabilities, and prints the top-$k$ predictions for each input text.
+\subsection{Deployment Overview}
+While Table~\ref{tab:test-results} shows that several lightweight baselines perform competitively, we deploy the best-performing model (fine-tuned DistilBERT) because it provides the strongest top-$k$ ranking quality for suggestion-style interfaces. The deployment workflow in this repository supports two complementary targets:
+\begin{itemize}
+    \item \textbf{Python (server/desktop) inference} for quick testing and integration in research code, using Hugging Face Transformers to load the saved checkpoint in \texttt{outputs/transformer\_deploy}.
+    \item \textbf{Client-side browser inference} (static web app and browser extension) by exporting the same checkpoint to ONNX and running it locally with Transformers.js and an ONNX Runtime WebAssembly backend \cite{onnx,transformersjs}.
+\end{itemize}
+Both targets share the same label mapping (\texttt{id2label.json}) and tokenizer assets. For Python inference, we also ship \texttt{training\_meta.json} so that \texttt{infer.py} can recover the training-time \texttt{max\_len} when running predictions.
 
-\subsection{Browser Demo (Client-side ONNX)}
-The \texttt{docs/} directory contains a static web application that loads a local model using Transformers.js \cite{transformersjs}. Remote model downloads are disabled; all assets are served from \texttt{docs/models/emoji-model/}. The main UI (\texttt{docs/index.html}) provides real-time emoji suggestions while typing; \texttt{docs/debug.html} offers a debugging interface for batch predictions and latency measurements.
+\subsection{Python Inference}
+The simplest way to run the deployed Transformer is the command-line helper \texttt{infer.py}. It loads the tokenizer and sequence-classification head from a local model directory (default \texttt{outputs/transformer\_deploy}), moves weights to the chosen device, and returns the top-$k$ predicted emojis with probabilities. Device selection can be automatic (\texttt{--device auto}, which uses CUDA if available) or explicit (e.g., \texttt{--device cpu}).
+
+Typical usage is:
+\begin{itemize}
+    \item \texttt{python infer.py --text "i can't believe this happened" --topk 5}
+    \item \texttt{python infer.py --model\_dir outputs/transformer\_deploy --text "so excited for tomorrow" --device auto}
+\end{itemize}
+For reproducibility, \texttt{infer.py} prints both the weight-load time and the end-to-end inference time, and it uses \texttt{training\_meta.json} to recover the configured \texttt{max\_len} unless overridden via \texttt{--max\_len}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/CLI.png}
+    \caption{Python inference example.}
+    \label{fig:python-infer}
+\end{figure}
 
 \subsection{ONNX Export and Quantization}
-To enable browser inference, \texttt{scripts/export\_onnx.py} exports the Transformer model to ONNX \cite{onnx} and optionally applies dynamic quantization to int8 for smaller downloads and faster CPU execution. The exported model is stored under \texttt{docs/models/emoji-model/onnx/} and is consumed by the web app.
+For browser deployment, we convert the fine-tuned Transformer checkpoint to ONNX. This produces a framework-agnostic computation graph that can be executed efficiently by ONNX Runtime in JavaScript/WASM environments \cite{onnx}. In this repository, the script \texttt{scripts/export\_onnx.py} exports the model in the directory layout expected by Transformers.js \cite{transformersjs}:
+\begin{itemize}
+    \item model assets (\texttt{config.json}, \texttt{tokenizer.json}, \texttt{id2label.json}, etc.) are copied to the output directory;
+    \item the ONNX file is placed under \texttt{onnx/} and renamed to \texttt{model.onnx} (or \texttt{model\_quantized.onnx} after quantization).
+\end{itemize}
 
+The script supports multiple export backends for robustness: it prefers Optimum's ONNX Runtime export if available, otherwise falls back to \texttt{transformers.onnx} (and finally to \texttt{torch.onnx.export} as a last resort). For deployment, we additionally apply dynamic int8 weight quantization (\texttt{--quantize q8}), which reduces model size and typically improves CPU/WASM inference speed with minimal quality degradation.
+
+A standard export command is:
+\begin{itemize}
+    \item \texttt{python scripts/export\_onnx.py}
+\end{itemize}
+By default, this exports from \texttt{outputs/transformer\_deploy} to \texttt{docs/models/emoji-model} and applies \texttt{q8} quantization. The same script can also export into \texttt{extension/models/emoji-model} when rebuilding the browser extension bundle.
+If \texttt{onnxruntime} is not installed, the script still exports ONNX but skips quantization and reports the missing dependency.
+
+\subsection{Web Application}
+The static web demo lives in \texttt{docs/} and is designed to run on any static file host (e.g., GitHub Pages). We publish the web application at \url{https://luongkhang04.github.io/emoji/}. The main UI (\texttt{docs/index.html}) provides a text area and an ``emoji bar'' that displays the top-$k$ suggestions. The inference logic in \texttt{docs/main.js} loads the quantized ONNX model from \texttt{docs/models/emoji-model/} using Transformers.js:
+\begin{itemize}
+    \item Remote model downloads are disabled (\texttt{env.allowRemoteModels = false}) to ensure fully local inference.
+    \item \texttt{env.localModelPath} points to \texttt{docs/models/}, so the pipeline resolves \texttt{emoji-model} from the bundled assets.
+    \item A short debounce window limits inference frequency while typing, improving responsiveness.
+    \item ONNX Runtime WASM threading is enabled (up to 4 threads) when supported by the browser.
+\end{itemize}
+The service worker (\texttt{docs/sw.js}) caches core assets so the application remains usable offline after the first successful load.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{images/desktop.png}
+    \caption{Web application on desktop.}
+    \label{fig:web-desktop}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\linewidth]{images/mobile.png}
+    \caption{Web application on mobile.}
+    \label{fig:web-mobile}
+\end{figure}
+
+\subsection{Browser Extension}
+In addition to the standalone web demo, we provide a lightweight browser extension (folder \texttt{extension/}) that suggests a single emoji inline while the user types. The extension is implemented as a Manifest V3 content script that runs on all pages and attaches listeners to editable targets (\texttt{input}, \texttt{textarea}, and \texttt{contenteditable} elements). Its workflow is:
+\begin{itemize}
+    \item Extract the most recent sentence fragment (splitting on punctuation) and remove any existing emojis.
+    \item Run a top-1 prediction with the local ONNX model using Transformers.js and ONNX Runtime WASM.
+    \item If the predicted probability exceeds a small threshold, render a compact suggestion tooltip near the cursor.
+    \item Insert the suggested emoji when the user presses \texttt{Tab}, adding surrounding whitespace when appropriate.
+\end{itemize}
+
+All inference runs locally in the browser: the model (\texttt{extension/models/emoji-model/}) and runtime assets (\texttt{extension/vendor/}) are packaged with the extension and exposed via \texttt{web\_accessible\_resources}. This design avoids sending user text to a server and keeps latency low enough for interactive typing assistance.
+
+We publish the extension on Microsoft Edge Add-ons at \url{https://microsoftedge.microsoft.com/addons/detail/emoji-suggest/jdjoadakfkdcdllijajaepmplaodkkhj}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/extension.png}
+    \caption{Browser extension example.}
+    \label{fig:extension}
+\end{figure}
