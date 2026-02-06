@@ -1,30 +1,17 @@
 \section{PROBLEM FORMULATION}
 
 \subsection{Task Definition}
-Let $\mathcal{Y} = \{1,2,\dots,C\}$ be a finite emoji label set with $C=43$ classes. We are given a dataset
+Let $\mathcal{E} = \{1,2,\dots,C\}$ be the emoji inventory with $C=43$ candidates. We are given a dataset
 \begin{equation}
     \mathcal{D} = \{(x_i, y_i)\}_{i=1}^{N},
 \end{equation}
-where $x_i$ is an input text string and $y_i \in \mathcal{Y}$ is the associated emoji label. The goal is to learn a function $f_{\theta}$ parameterized by $\theta$ that maps text to a distribution over emojis.
+where $x_i$ is an input text string and $y_i \in \mathcal{E}$ is the emoji observed with the text. We frame emoji prediction as a \textbf{ranking} task: for each query $x$, the model should produce an ordering over emojis such that relevant emojis appear near the top of the list.
 
-\subsection{Learning Objective}
-Most models in this repo produce unnormalized scores (logits) $z = f_{\theta}(x) \in \mathbb{R}^{C}$, converted to class probabilities via the softmax:
+\subsection{Model Definition}
+A model is a function $f: \mathcal{X} \times \mathcal{E} \to \mathbb{R}$ that scores the compatibility between an input text $x$ and an emoji $y$. Given a query $x$, the model produces a ranking over emojis by sorting them in descending order of their scores $\{f(x,y) : y \in \mathcal{E}\}$. 
+
+\subsection{Evaluation Metrics}
+Because multiple emojis can be plausible for a text, we evaluate the \textbf{top-k of the ranking}. Let $\text{Top}^k(x)$ denote the set of $k$ highest-scoring predicted emojis for input $x$. We use \textbf{accuracy at top-k} (Acc@k) as the evaluation metric, defined as the proportion of examples where the ground-truth emoji $y_i$ is among the top-k predictions for input $x_i$:
 \begin{equation}
-    p_{\theta}(y=c\mid x) = \frac{\exp(z_c)}{\sum_{j=1}^{C} \exp(z_j)}.
+    \text{Acc@}k = \frac{1}{N}\sum_{i=1}^{N} \mathbb{I}\left[y_i \in \text{Top}^k(x_i)\right].
 \end{equation}
-The standard training objective for neural models is cross-entropy:
-\begin{equation}
-    \mathcal{L}(\theta) = -\frac{1}{N}\sum_{i=1}^{N}\log p_{\theta}(y_i \mid x_i).
-\end{equation}
-
-\subsection{Evaluation Metrics (Top-$k$)}
-Because multiple emojis can be plausible for a text, we evaluate models using \textbf{top-$k$} metrics. Let $\text{TopK}(x)$ denote the set of $k$ highest-scoring predicted labels for input $x$.
-
-\paragraph{Top-$k$ Accuracy.}
-\begin{equation}
-    \text{Acc@}k = \frac{1}{N}\sum_{i=1}^{N} \mathbb{1}\left[y_i \in \text{TopK}(x_i)\right].
-\end{equation}
-
-\paragraph{Macro Recall@k and Macro F1@k.}
-For each class $c$, we treat the event ``$c$ is included in top-$k$'' as a binary prediction and compute per-class precision/recall/F1, then macro-average across classes. This is implemented in \texttt{ml.topk\_metrics} and reported for $k\in\{1,3,5\}$.
-
